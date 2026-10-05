@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPS Test - 1, 5, 10, 60 Seconds</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+            margin: 0;
+            padding: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        .menu {
+            margin-bottom: 20px;
+        }
+        button.time-btn {
+            background-color: #ddd;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button.time-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #click-box {
+            width: 300px;
+            height: 200px;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0 auto;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #click-box:active {
+            background-color: #0056b3;
+        }
+        #reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Clicks Per Second (CPS) Test</h1>
+    
+    <div class="menu">
+        <button class="time-btn" onclick="setTime(1)">1 Sec</button>
+        <button class="time-btn active" onclick="setTime(5)">5 Sec</button>
+        <button class="time-btn" onclick="setTime(10)">10 Sec</button>
+        <button class="time-btn" onclick="setTime(60)">60 Sec</button>
+    </div>
+
+    <div class="stats">
+        <div>Time Left: <span id="time-display">5.0</span>s</div>
+        <div>Clicks: <span id="clicks-display">0</span></div>
+        <div>CPS: <span id="cps-display">0.0</span></div>
+    </div>
+
+    <div id="click-box" onclick="handleClick()">Click Here to Start</div>
+    
+    <div>
+        <button id="reset-btn" onclick="resetTest()">Reset</button>
+    </div>
+
+    <script>
+        let selectedTime = 5;
+        let timeLeft = 5;
+        let clicks = 0;
+        let timerId = null;
+        let isPlaying = false;
+        let isFinished = false;
+
+        function setTime(seconds) {
+            if (isPlaying) return;
+            selectedTime = seconds;
+            timeLeft = seconds;
+            document.getElementById('time-display').innerText = timeLeft.toFixed(1);
+            
+            // Update active button styling
+            let buttons = document.querySelectorAll('.time-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            resetTest();
+        }
+
+        function handleClick() {
+            if (isFinished) return;
+            
+            if (!isPlaying) {
+                isPlaying = true;
+                startTimer();
+            }
+            
+            clicks++;
+            document.getElementById('clicks-display').innerText = clicks;
+            updateCPS();
+        }
+
+        function startTimer() {
+            let startTime = Date.now();
+            let endTime = startTime + selectedTime * 1000;
+            
+            timerId = setInterval(() => {
+                let currentLeft = (endTime - Date.now()) / 1000;
+                
+                if (currentLeft <= 0) {
+                    timeLeft = 0;
+                    document.getElementById('time-display').innerText = "0.0";
+                    endTest();
+                } else {
+                    timeLeft = currentLeft;
+                    document.getElementById('time-display').innerText = timeLeft.toFixed(1);
+                    updateCPS();
+                }
+            }, 50);
+        }
+
+        function updateCPS() {
+            let elapsed = selectedTime - timeLeft;
+            if (elapsed > 0) {
+                let currentCPS = clicks / elapsed;
+                document.getElementById('cps-display').innerText = currentCPS.toFixed(2);
+            }
+        }
+
+        function endTest() {
+            clearInterval(timerId);
+            isPlaying = false;
+            isFinished = true;
+            document.getElementById('click-box').innerText = "Test Over! CPS: " + (clicks / selectedTime).toFixed(2);
+        }
+
+        function resetTest() {
+            clearInterval(timerId);
+            isPlaying = false;
+            isFinished = false;
+            clicks = 0;
+            timeLeft = selectedTime;
+            document.getElementById('time-display').innerText = timeLeft.toFixed(1);
+            document.getElementById('clicks-display').innerText = clicks;
+            document.getElementById('cps-display').innerText = "0.0";
+            document.getElementById('click-box').innerText = "Click Here to Start";
+        }
+    </script>
+</body>
+</html>
